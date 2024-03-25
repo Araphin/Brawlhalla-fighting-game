@@ -12,8 +12,6 @@ public class Enemy : MonoBehaviour
 
     [Header("Ground check settings")]
     [SerializeField] private Transform groundCheckPoint;
-    [SerializeField] private float groundCheckY = 0.2f;
-    [SerializeField] private float groundCheckX = 0.5f;
     [SerializeField] private LayerMask WhatisGround;
 
     // Start is called before the first frame update

@@ -1,3 +1,4 @@
+using NUnit.Framework.Internal.Execution;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
@@ -18,7 +19,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckY = 0.2f;
     [SerializeField] private float groundCheckX = 0.5f;
     [SerializeField] private LayerMask WhatisGround;
-   
+
 
     PlayerStateList pState;
     private Rigidbody2D rb;
@@ -33,6 +34,14 @@ public class PlayerController : MonoBehaviour
     public int attackDamage = 40;
     public float attackRate = 2f;
     float nextAttackTime = 0f;
+
+    [Header("WeaponAnimators")]
+    public RuntimeAnimatorController SwordController;
+    public RuntimeAnimatorController SpearController;
+    public RuntimeAnimatorController AxeController;
+    public RuntimeAnimatorController HammerController;
+
+
 
 
 
@@ -189,5 +198,33 @@ public class PlayerController : MonoBehaviour
         
 
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
+
+   
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "pickup")
+        {
+            Weapons pickup = collision.gameObject.GetComponent<Weapons>();
+            string weapon = pickup.randomWeapon();
+            if (weapon == "sword")
+            {
+                anim.runtimeAnimatorController = SwordController as RuntimeAnimatorController;
+            }
+            else if (weapon == "spear")
+            {
+                anim.runtimeAnimatorController = SpearController as RuntimeAnimatorController;
+            }
+            else if (weapon == "axe")
+            {
+                anim.runtimeAnimatorController = AxeController as RuntimeAnimatorController;
+            }
+            else if (weapon == "hammer")
+            {
+                anim.runtimeAnimatorController = HammerController as RuntimeAnimatorController;
+            }
+
+        }
     }
 }

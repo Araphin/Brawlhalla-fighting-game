@@ -1,18 +1,20 @@
+using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Weapons : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+   
+    public string randomWeapon()
     {
+        List<string> list = new List<string>(){ "spear", "sword", "hammer", "axe" };
+        int rnd = UnityEngine.Random.Range (0, list.Count);
+        Destroy(gameObject, 0.1f);
+        return list[rnd];
         
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
 }
