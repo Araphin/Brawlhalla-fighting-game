@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int jumpBufferFrames = 0;
     private float coyoteTimeCounter = 0;
     [SerializeField] private float coyoteTime;
+    private int airJumpCounter = 0;
+    [SerializeField] private int maxAirJumps;
 
     [Header("Ground check settings")]
     [SerializeField] private Transform groundCheckPoint;
@@ -29,9 +31,8 @@ public class PlayerController : MonoBehaviour
     [Header("Player Combat")]
     public Transform attackPoint;
     public LayerMask enemyLayers;
-
-    public float attackRange = 0.5f;
-    public int attackDamage = 40;
+    public float attackRange = 0.2f;
+    public int attackDamage = 10;
     public float attackRate = 2f;
     float nextAttackTime = 0f;
 
@@ -41,7 +42,15 @@ public class PlayerController : MonoBehaviour
     public RuntimeAnimatorController AxeController;
     public RuntimeAnimatorController HammerController;
 
+    [Header("PlayerHealth")]
+    public int maxHealth = 100;
+    public int currentHealth;
 
+    public int Lives = 3;
+    Vector2 startPos;
+
+    public float Knockback;
+    public Vector2 PlayerDirection = Vector2.left;
 
 
 
@@ -64,7 +73,7 @@ public class PlayerController : MonoBehaviour
         Move();
         Jump();
 
-        if(Time.time >= nextAttackTime)
+        if (Time.time >= nextAttackTime)
         {
             if (Input.GetKeyDown(KeyCode.Mouse0))
             {
@@ -72,22 +81,28 @@ public class PlayerController : MonoBehaviour
                 nextAttackTime = Time.time + 1f / attackRate;
             }
         }
-      
+
     }
 
-    void GetInputs()
+
+    public void GetInputs()
     {
         xAxis = Input.GetAxis("Horizontal");
     }
 
     void Flip()
     {
+
+        PlayerDirection = PlayerDirection * -1;
+
         if (xAxis < 0)
         {
+            PlayerDirection = Vector2.right;
             transform.localScale = new Vector2(1, transform.localScale.y);
         }
         else if (xAxis > 0)
         {
+            PlayerDirection = Vector2.left;
             transform.localScale = new Vector2(-1, transform.localScale.y);
         }
     }
@@ -142,6 +157,14 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector3(rb.velocity.x, jumpForce);
             pState.jumping = true;
         }
+        else if (!Grounded() && airJumpCounter < maxAirJumps && Input.GetButtonDown("Jump"))
+        {
+            pState.jumping = true;
+
+            airJumpCounter++;
+
+            rb.velocity = new Vector3(rb.velocity.x, jumpForce);
+        }
 
         anim.SetBool("Jumping", !Grounded());
     }
@@ -152,6 +175,7 @@ public class PlayerController : MonoBehaviour
         {
             pState.jumping = false;
             coyoteTimeCounter = coyoteTime;
+            airJumpCounter = 0;
         }
         else
         {
@@ -186,7 +210,7 @@ public class PlayerController : MonoBehaviour
             Enemy newEnemy = enemy.GetComponent<Enemy>();
             if (newEnemy.currentHealth > 0)
             {
-               newEnemy.TakeDamage(attackDamage);
+                newEnemy.TakeDamage(attackDamage);
             }
         }
     }
@@ -194,13 +218,13 @@ public class PlayerController : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         if (attackPoint == null)
-           return;
-        
+            return;
+
 
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
     }
 
-   
+
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -211,20 +235,78 @@ public class PlayerController : MonoBehaviour
             if (weapon == "sword")
             {
                 anim.runtimeAnimatorController = SwordController as RuntimeAnimatorController;
+                attackDamage = 20;
+                attackRange = 0.5f;
+                attackRate = 2;
             }
             else if (weapon == "spear")
             {
                 anim.runtimeAnimatorController = SpearController as RuntimeAnimatorController;
+                attackDamage = 15;
+                attackRange = 0.7f;
+                attackRate = 2.2f;
             }
-            else if (weapon == "axe")
-            {
-                anim.runtimeAnimatorController = AxeController as RuntimeAnimatorController;
-            }
-            else if (weapon == "hammer")
-            {
-                anim.runtimeAnimatorController = HammerController as RuntimeAnimatorController;
-            }
+            // else if (weapon == "axe")
+            //   {
+            //      anim.runtimeAnimatorController = AxeController as RuntimeAnimatorController;
+            //   }
+            //  else if (weapon == "hammer")
+            //   {
+            //       anim.runtimeAnimatorController = HammerController as RuntimeAnimatorController;
+            //    }
+
 
         }
+
+        if (collision.CompareTag("Deathzone"))
+        {
+            Die();
+        }
     }
+
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+        anim.SetTrigger("Hurt");
+
+        rb.AddForce(Vector2.right * 100);
+        //  if (currentHealth <= 0)
+        // {
+        // Die2();
+        // }
+    }
+
+    public void Die2()
+    {
+        Debug.Log("Player died!");
+
+        anim.SetBool("IsDead", true);
+
+       
+        rb.velocityX = 0;
+       
+       
+      //  this.enabled = false;
+    }
+
+    void Die()
+    {
+        if (Lives > 0)
+        {
+            Lives = Lives - 1;
+            Respawn();
+        }
+        else if (Lives == 0) 
+        { 
+          Die2();
+        }
+    }
+
+    void Respawn()
+    { 
+        
+        transform.position = startPos;
+    }
+
+
 }
