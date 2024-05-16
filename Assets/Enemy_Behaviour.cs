@@ -80,6 +80,15 @@ public class Enemy_Behaviour : MonoBehaviour
                     Cooldown();
                     anim.SetBool("Attack", false);
                 }
+
+              //  if (Time.time >= nextAttackTime)
+               // {
+               //     if (Input.GetKeyDown(KeyCode.Mouse0))
+             //       {
+              //          Attack();
+              //          nextAttackTime = Time.time + 1f / attackRate;
+             //       }
+              //  }
             }
         }
     }

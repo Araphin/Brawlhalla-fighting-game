@@ -51,7 +51,8 @@ public class PlayerController : MonoBehaviour
 
     public float Knockback;
     public Vector2 PlayerDirection = Vector2.left;
-
+    public Vector2 EnemyDirection = Vector2.left;
+    Transform enemyTransform;
 
 
     // Start is called before the first frame update
@@ -264,17 +265,52 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void TakeDamage(int damage)
-    {
-        currentHealth -= damage;
-        anim.SetTrigger("Hurt");
+    
+        public void TakeDamage1(int damage)
+        {
 
-        rb.AddForce(Vector2.right * 100);
-        //  if (currentHealth <= 0)
-        // {
-        // Die2();
-        // }
-    }
+            currentHealth -= damage;
+            anim.SetTrigger("Hurt");
+
+            // Determine which direction the player is facing
+            if (enemyTransform.position.x > transform.position.x)
+            {
+                // Player is to the right of the enemy, so set PlayerDirection to left
+                PlayerDirection = Vector2.left;
+            }
+            else
+            {
+                // Player is to the left of the enemy, so set PlayerDirection to right
+                EnemyDirection = Vector2.right;
+            }
+            //else if (Die2())
+            //{
+
+            //}
+            // Define the start and end values
+            float startValue = 300f;
+            float endValue = 75f;
+
+            // Calculate the 't' value
+            float t = (currentHealth / maxHealth);
+
+            print(t);
+
+            // Use Mathf.Lerp to calculate the knockback value
+            float Knockback = Mathf.Lerp(startValue, endValue, t);
+
+            // Print the knockback value
+            print(Knockback);
+
+
+            rb.AddForce(PlayerDirection * Knockback);
+
+            // if (currentHealth <= 0)
+            //  { 
+            //     Die();
+            //   }  
+        }
+   
 
     public void Die2()
     {

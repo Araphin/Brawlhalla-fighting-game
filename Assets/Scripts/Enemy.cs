@@ -53,6 +53,10 @@ public class Enemy : MonoBehaviour
     public int attackDamage = 10;
     public float attackRate = 2f;
     float nextAttackTime = 0f;
+    public GameObject playerObject;
+
+    
+    public Vector2 EnemyDirection = Vector2.left;
 
     [Header("WeaponAnimators")]
     public RuntimeAnimatorController SwordController;
@@ -65,7 +69,7 @@ public class Enemy : MonoBehaviour
     {
         currentHealth = maxHealth;
 
-        GameObject playerObject = GameObject.FindWithTag("Player");
+        playerObject = GameObject.FindWithTag("Player");
         if (playerObject != null)
         {
             playerTransform = playerObject.transform;
@@ -89,6 +93,10 @@ public class Enemy : MonoBehaviour
             // Player is to the left of the enemy, so set PlayerDirection to right
             PlayerDirection = Vector2.right;
         }
+        //else if (Die2())
+        //{
+           
+        //}
         // Define the start and end values
         float startValue = 300f;
         float endValue = 75f;        
@@ -166,54 +174,60 @@ public class Enemy : MonoBehaviour
                     StopAttack();
                 }
 
-                void EnemyLogic()
-                {
-                    distance = Vector2.Distance(transform.position, target.transform.position);
-
-                    if(distance > attackDistance)
-                    {
-                        Move();
-                        StopAttack();
-                    }
-                    else if (attackDistance >= distance && cooling == false)
-                    {
-                        Attack();
-                    }
-
-                    if (cooling)
-                    {
-                        Cooldown();
-                        anim.SetBool("Attack", false);
-                    }
-                }
+               
             }
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)   
+    void EnemyLogic()
+    {
+        distance = Vector2.Distance(transform.position, target.transform.position);
+
+        if (distance > attackDistance)
         {
-            //if (collision.gameObject.tag == "pickup")
-            //   Weapons pickup = collision.gameObject.GetComponent<Weapons>();
-            //   string weapon = pickup.randomWeapon();
-            //   if (weapon == "sword")
-            //   {
-            //       anim.runtimeAnimatorController = SwordController as RuntimeAnimatorController;
-            //       attackDamage = 20;
-            //       attackRange = 0.5f;
-            //       attackRate = 2;
-            //   }
-            //   else if (weapon == "spear")
-            //   {
-            //       anim.runtimeAnimatorController = SpearController as RuntimeAnimatorController;
-            //       attackDamage = 15;
-            //       attackRange = 0.7f;
-            //       attackRate = 2.2f;
-            //   }
+            Move();
+            StopAttack();
+        }
+        else if (attackDistance >= distance && cooling == false)
+        {
+            Attack();
+        }
 
+        if (cooling)
+        {
+            Cooldown();
+            anim.SetBool("Attack", false);
+        }
+    }
 
-            if (collision.gameObject.tag == "Player")
+    private void OnTriggerEnter2D(Collider2D collision)   
+        {
+        if (collision.gameObject.tag == "pickup")
+        {
+            Weapons pickup = collision.gameObject.GetComponent<Weapons>();
+            string weapon = pickup.randomWeapon();
+
+            if (weapon == "sword")
+            {
+                anim.runtimeAnimatorController = SwordController as RuntimeAnimatorController;
+                attackDamage = 20;
+                attackRange = 0.5f;
+                attackRate = 2;
+
+            }
+            else if (weapon == "spear")
+            {
+                anim.runtimeAnimatorController = SpearController as RuntimeAnimatorController;
+                attackDamage = 15;
+                attackRange = 0.7f;
+                attackRate = 2.2f;
+            }
+        }
+
+        if (collision.gameObject.tag == "Player")
             {
                target = collision.gameObject;
                inRange = true;
+               Attack();
                print ("HitPlayer");
             }
  
@@ -237,6 +251,7 @@ public class Enemy : MonoBehaviour
 
         void Attack()
         {
+            
             timer = intTimer;
             AttackMode = true;
 
@@ -246,19 +261,23 @@ public class Enemy : MonoBehaviour
             //Play an attack animations
              anim.SetTrigger("Attack");
 
-             // Detect enemies in range of attack
-             Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, PlayerLayers);
+        // Detect enemies in range of attack
+        //Collider2D[] hitPlayer = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, PlayerLayers);
 
 
-             // damage them
-             foreach (Collider2D enemy in hitEnemies)
-             {
-                 PlayerController newEnemy = enemy.GetComponent<PlayerController>();
-                 if (newEnemy.currentHealth > 0)
-                 {
-                     newEnemy.TakeDamage(attackDamage);
-                 }
-             }
+        //// damage them
+        //foreach (Collider2D player in hitPlayer)
+        //{
+        // //check for player controller script
+        //    PlayerController newPlayer = player.GetComponent<PlayerController>();
+        //    if (newPlayer.currentHealth > 0)
+        //    {
+        //        newPlayer.TakeDamage1(attackDamage);
+        //        print("attack");
+        //    }
+        //}
+
+           playerObject.GetComponent<PlayerController>().TakeDamage1(attackDamage);
     }
 
         void Cooldown()
@@ -277,6 +296,7 @@ public class Enemy : MonoBehaviour
             cooling = false;
             AttackMode = false;
             anim.SetBool("Attack", false);
+            anim.SetBool("Running", true); 
         }
 
         void RaycastDebugger ()
@@ -310,7 +330,7 @@ public class Enemy : MonoBehaviour
     
     public void Die2()
     {
-        Debug.Log("Player died!");
+        Debug.Log("Enemy died!");
 
         animator.SetBool("IsDead", true);
 
