@@ -1,8 +1,12 @@
 using NUnit.Framework.Internal.Execution;
+using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.Windows;
+using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
 public class PlayerController : MonoBehaviour
 {
@@ -85,12 +89,13 @@ public class PlayerController : MonoBehaviour
 
     }
 
-
+    // This function gets the player's horizontal input (left or right).
     public void GetInputs()
     {
         xAxis = Input.GetAxis("Horizontal");
     }
 
+    //This function flips the player sprite based on the direction of movement.
     void Flip()
     {
 
@@ -110,13 +115,14 @@ public class PlayerController : MonoBehaviour
 
 
 
-
+    //This function moves the player horizontally based on the input.
     private void Move()
     {
         rb.velocity = new Vector2(walkSpeed * xAxis, rb.velocity.y);
         anim.SetBool("Running", rb.velocity.x != 0 && Grounded());
     }
 
+    //This function checks if the player is touching the ground using raycasts.
     public bool Grounded()
     {
         if (Physics2D.Raycast(groundCheckPoint.position, Vector2.down, groundCheckY, WhatisGround)
@@ -133,7 +139,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-
+    // This function handles the player's jumping. It checks if the jump button is pressed and if the player is grounded or has air jumps left.
     void Jump()
     {
         if (Input.GetButtonUp("Jump") && rb.velocity.y > 0)
@@ -170,6 +176,7 @@ public class PlayerController : MonoBehaviour
         anim.SetBool("Jumping", !Grounded());
     }
 
+    //This function updates variables related to jumping, like the coyote time counter and jump buffer counter.
     void UpdateJumpVariables()
     {
         if (Grounded())
@@ -195,7 +202,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-
+    //This function handles the player's attack. It plays an attack animation, detects enemies in range, and reduces their health.
     void Attack()
     {
         //Play an attack animations
@@ -226,7 +233,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-
+    //This function is called when the player enters a trigger collider. It checks if the player has picked up a weapon or entered a death zone.
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "pickup")
@@ -265,8 +272,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    
-        public void TakeDamage1(int damage)
+    //This function reduces the player's health when they take damage, plays a hurt animation, and applies a knockback force.
+    public void TakeDamage1(int damage)
         {
 
             currentHealth -= damage;
@@ -310,8 +317,10 @@ public class PlayerController : MonoBehaviour
             //     Die();
             //   }  
         }
-   
 
+
+    //This function is called when the player has no lives left. It logs a message to the console saying "Player died!", sets the IsDead animation parameter to true, and sets the player's x velocity to 0.
+    //This function essentially handles what happens when the player dies and has no lives left. public void Die2()
     public void Die2()
     {
         Debug.Log("Player died!");
@@ -325,6 +334,8 @@ public class PlayerController : MonoBehaviour
       //  this.enabled = false;
     }
 
+    //This function is called when the player enters a death zone. It checks if the player has any lives left. If the player has more than 0 lives, it reduces the lives by 1 and calls the Respawn() function to respawn the player.
+    //If the player has no lives left (i.e., Lives == 0), it calls the Die2() function.
     void Die()
     {
         if (Lives > 0)
@@ -338,6 +349,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //Respawns the player and spawns it back to its starting position.
     void Respawn()
     { 
         
