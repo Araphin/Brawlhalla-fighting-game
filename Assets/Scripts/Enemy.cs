@@ -69,13 +69,15 @@ public class Enemy : MonoBehaviour
     {
         currentHealth = maxHealth;
 
-        playerObject = GameObject.FindWithTag("Player");
+        playerObject = GameObject.FindWithTag("Player" + "pickup");
         if (playerObject != null)
         {
             playerTransform = playerObject.transform;
         }
     }
 
+
+    //In video 2:55
     public void TakeDamage(int damage)
     {
 
@@ -145,6 +147,11 @@ public class Enemy : MonoBehaviour
 
         void Update()
         {
+            if (!AttackMode)
+            {
+                Move();
+            }
+         
             if (Time.time >= nextAttackTime)
             {
                  if (AttackMode)
@@ -156,7 +163,7 @@ public class Enemy : MonoBehaviour
 
             if (inRange)
             {
-                hit = Physics2D.Raycast(rayCast.position, Vector2.left, rayCastLength, raycastMask);
+                hit = Physics2D.Raycast(rayCast.position, transform.right, rayCastLength, raycastMask);
                 RaycastDebugger();
 
                 if (hit.collider != null)
@@ -184,7 +191,7 @@ public class Enemy : MonoBehaviour
 
         if (distance > attackDistance)
         {
-            Move();
+           
             StopAttack();
         }
         else if (attackDistance >= distance && cooling == false)
@@ -278,7 +285,7 @@ public class Enemy : MonoBehaviour
         //    }
         //}
 
-           playerObject.GetComponent<PlayerController>().TakeDamage1(attackDamage);
+           playerObject.GetComponent<PlayerController>().TakeDamage1(attackDamage, transform);
     }
 
         void Cooldown()
@@ -304,10 +311,16 @@ public class Enemy : MonoBehaviour
         {
             if(distance > attackDistance)
             {
-                Debug.DrawRay(rayCast.position, Vector2.left* rayCastLength, Color.green);
+                Debug.DrawRay(rayCast.position, Vector2.right* rayCastLength, Color.green);
             }
         }
     
+
+       public void TriggerCooling()
+       {
+           cooling = true;
+       }
+
 
         void Flip()
         {
@@ -351,6 +364,8 @@ public class Enemy : MonoBehaviour
         {
             Lives = Lives - 1;
             Respawn();
+            currentHealth = 100;
+            Knockback = 0;
         }
         else if (Lives == 0)
         {
@@ -362,4 +377,9 @@ public class Enemy : MonoBehaviour
     {
         transform.position = startPos;
     }
-}
+
+    private bool InsideofLimits()
+    {
+        return transform.position.x > leftLimit.position.x && transform.position.x < rightLimit.position.x;
+    }
+} 
