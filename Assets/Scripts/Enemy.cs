@@ -34,10 +34,12 @@ public class Enemy : MonoBehaviour
     public float moveSpeed;
     public float timer;
     #endregion
+    public Transform leftLimit;
+    public Transform rightLimit;
 
     #region Private Variables
     public RaycastHit2D hit;
-    private GameObject target;
+    private Transform target;
     private Animator anim;
     private float distance;
     private bool AttackMode;
@@ -45,6 +47,7 @@ public class Enemy : MonoBehaviour
     private bool cooling;
     private float intTimer;
     #endregion
+
 
     [Header("Player Combat")]
     public Transform attackPoint;
@@ -54,6 +57,7 @@ public class Enemy : MonoBehaviour
     public float attackRate = 2f;
     float nextAttackTime = 0f;
     public GameObject playerObject;
+    
 
     
     public Vector2 EnemyDirection = Vector2.left;
@@ -69,7 +73,7 @@ public class Enemy : MonoBehaviour
     {
         currentHealth = maxHealth;
 
-        playerObject = GameObject.FindWithTag("Player" + "pickup");
+        playerObject = GameObject.FindWithTag("Player");
         if (playerObject != null)
         {
             playerTransform = playerObject.transform;
@@ -134,60 +138,58 @@ public class Enemy : MonoBehaviour
         
     //}
 
-   
-    
-     
+    private void Awake()
+    {
+        SelectTarget();
+        intTimer = timer;
+        anim = GetComponent<Animator>();
+    }
 
-        private void Awake()
+    void Update()
+    {
+        if (!AttackMode)
         {
-            intTimer = timer;
-            anim = GetComponent<Animator>();
-
+            Move();
         }
-
-        void Update()
-        {
-            if (!AttackMode)
-            {
-                Move();
-            }
          
-            if (Time.time >= nextAttackTime)
+        if (Time.time >= nextAttackTime)
+        {
+            if (AttackMode)
             {
-                 if (AttackMode)
-                 {
-                     Attack();
-                     nextAttackTime = Time.time + 1f / attackRate;
-                 }
-            }
-
-            if (inRange)
-            {
-                hit = Physics2D.Raycast(rayCast.position, transform.right, rayCastLength, raycastMask);
-                RaycastDebugger();
-
-                if (hit.collider != null)
-                {
-                    EnemyLogic();
-                }
-                else if (hit.collider == null)
-                {
-                    inRange = false;
-                }
-
-                if (inRange == false)
-                {
-                    anim.SetBool("Running", false);
-                    StopAttack();
-                }
-
-               
+                Attack();
+                nextAttackTime = Time.time + 1f / attackRate;
             }
         }
+
+        if (inRange)
+        {
+            hit = Physics2D.Raycast(rayCast.position, transform.right, rayCastLength, raycastMask);
+            RaycastDebugger();
+
+            if (hit.collider != null)
+            {
+                EnemyLogic();
+            }
+            else if (hit.collider == null)
+            {
+                inRange = false;
+            }
+
+            if (inRange == false)
+            {
+                StopAttack();
+            }               
+        }
+
+        if(!InsideofLimits() && !inRange && !anim.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+        {
+            SelectTarget();
+        }
+    }
 
     void EnemyLogic()
     {
-        distance = Vector2.Distance(transform.position, target.transform.position);
+        distance = Vector2.Distance(transform.position, playerObject.transform.position);
 
         if (distance > attackDistance)
         {
@@ -206,8 +208,24 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    private void SelectTarget()
+    {
+        float distanceToLeft = Vector2.Distance(transform.position, leftLimit.position);
+        float distanceToRight = Vector2.Distance(transform.position, rightLimit.position);
 
-    private void OnTriggerEnter2D(Collider2D collision)   
+        if(distanceToLeft > distanceToRight)
+        {
+            target = leftLimit;
+        }
+        else
+        {
+            target = rightLimit;
+        }
+
+        Flip();
+    }
+
+        void OnTriggerEnter2D(Collider2D collision)   
         {
         if (collision.gameObject.tag == "pickup")
         {
@@ -233,10 +251,10 @@ public class Enemy : MonoBehaviour
 
         if (collision.gameObject.tag == "Player")
             {
-               target = collision.gameObject;
+               target = collision.transform;
                inRange = true;
-               Attack();
-               print ("HitPlayer");
+               Flip();
+               
             }
  
             if (collision.CompareTag("Deathzone"))
@@ -250,15 +268,17 @@ public class Enemy : MonoBehaviour
             anim.SetBool("Running", true);
             if(!anim.GetCurrentAnimatorStateInfo(0).IsName(""))
             {
-                Vector2 targetPosition = new Vector2(target.transform.position.x, transform.position.y);
+                Vector2 targetPosition = new Vector2(target.position.x, transform.position.y);
 
                 transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
 
             }
         }
 
-        void Attack()
-        {
+    void Attack()
+    {
+
+        print("Enemy Attack");
             
             timer = intTimer;
             AttackMode = true;
@@ -285,7 +305,7 @@ public class Enemy : MonoBehaviour
         //    }
         //}
 
-           playerObject.GetComponent<PlayerController>().TakeDamage1(attackDamage, transform);
+        playerObject.GetComponent<PlayerController>().TakeDamage1(attackDamage, transform);
     }
 
         void Cooldown()
@@ -301,6 +321,7 @@ public class Enemy : MonoBehaviour
 
         void StopAttack()
         {
+        print("Stop Attack");
             cooling = false;
             AttackMode = false;
             anim.SetBool("Attack", false);
@@ -311,7 +332,11 @@ public class Enemy : MonoBehaviour
         {
             if(distance > attackDistance)
             {
-                Debug.DrawRay(rayCast.position, Vector2.right* rayCastLength, Color.green);
+                Debug.DrawRay(rayCast.position, transform.right * rayCastLength, Color.red);
+            }
+            else if (attackDistance > distance)
+            {
+                Debug.DrawRay(rayCast.position, transform.right * rayCastLength, Color.green);
             }
         }
     
@@ -320,21 +345,7 @@ public class Enemy : MonoBehaviour
        {
            cooling = true;
        }
-
-
-        void Flip()
-        {
-             if (xAxis < 0)
-             { 
-                 PlayerDirection = Vector2.right;
-                 transform.localScale = new Vector2(1, transform.localScale.y);
-             }
-             else if (xAxis > 0)
-             {
-                 PlayerDirection = Vector2.left;
-                 transform.localScale = new Vector2(-1, transform.localScale.y);
-             }
-        }
+      
 
     private void Start1()
     {
@@ -382,4 +393,39 @@ public class Enemy : MonoBehaviour
     {
         return transform.position.x > leftLimit.position.x && transform.position.x < rightLimit.position.x;
     }
+
+    //private void OnDrawGizmosSelected()
+    //{
+    //    float distanceToLeft = Vector2.Distance(transform.position, leftLimit.position);
+    //    float distanceToRight = Vector2.Distance(transform.position, rightLimit.position);
+
+    //    if(distanceToLeft > distanceToRight) 
+    //    {
+    //        target = leftLimit;
+    //    }
+    //    else
+    //    {
+    //        target = rightLimit;
+    //    }
+
+    //    Flip();
+
+    //}
+
+    private void Flip()
+    {
+        Vector3 rotation = transform.eulerAngles;
+        if(transform.position.x > target.position.x)
+        {
+            rotation.y = 0f;
+        }
+        else
+        {
+            rotation.y = 180f;
+        }
+
+        transform.eulerAngles = rotation;
+    }
+
+    
 } 

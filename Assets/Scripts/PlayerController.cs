@@ -47,8 +47,8 @@ public class PlayerController : MonoBehaviour
     public RuntimeAnimatorController HammerController;
 
     [Header("PlayerHealth")]
-    public int maxHealth = 100;
-    public int currentHealth;
+    public float maxHealth = 100;
+    public float currentHealth;
 
     public int Lives = 3;
     Vector2 startPos;
@@ -80,7 +80,7 @@ public class PlayerController : MonoBehaviour
 
         if (Time.time >= nextAttackTime)
         {
-            if (Input.GetKeyDown(KeyCode.Mouse0))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Mouse0))
             {
                 Attack();
                 nextAttackTime = Time.time + 1f / attackRate;
@@ -92,7 +92,7 @@ public class PlayerController : MonoBehaviour
     // This function gets the player's horizontal input (left or right).
     public void GetInputs()
     {
-        xAxis = Input.GetAxis("Horizontal");
+        xAxis = UnityEngine.Input.GetAxis("Horizontal");
     }
 
     //This function flips the player sprite based on the direction of movement.
@@ -142,7 +142,7 @@ public class PlayerController : MonoBehaviour
     // This function handles the player's jumping. It checks if the jump button is pressed and if the player is grounded or has air jumps left.
     void Jump()
     {
-        if (Input.GetButtonUp("Jump") && rb.velocity.y > 0)
+        if (UnityEngine.Input.GetButtonUp("Jump") && rb.velocity.y > 0)
         {
             rb.velocity = new Vector2(rb.velocity.x, 0);
 
@@ -159,12 +159,12 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (Input.GetButtonDown("Jump") && Grounded())
+        if (UnityEngine.Input.GetButtonDown("Jump") && Grounded())
         {
             rb.velocity = new Vector3(rb.velocity.x, jumpForce);
             pState.jumping = true;
         }
-        else if (!Grounded() && airJumpCounter < maxAirJumps && Input.GetButtonDown("Jump"))
+        else if (!Grounded() && airJumpCounter < maxAirJumps && UnityEngine.Input.GetButtonDown("Jump"))
         {
             pState.jumping = true;
 
@@ -191,7 +191,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (Input.GetButtonDown("Jump"))
+        if (UnityEngine.Input.GetButtonDown("Jump"))
         {
             jumpBufferCounter = jumpBufferFrames;
         }
@@ -273,9 +273,10 @@ public class PlayerController : MonoBehaviour
     }
 
     //This function reduces the player's health when they take damage, plays a hurt animation, and applies a knockback force.
-    public void TakeDamage1(int damage)
+    public void TakeDamage1(int damage, Transform enemyTransform)
         {
 
+            print("Take damage " + damage);
             currentHealth -= damage;
             anim.SetTrigger("Hurt");
 
@@ -301,13 +302,13 @@ public class PlayerController : MonoBehaviour
             // Calculate the 't' value
             float t = (currentHealth / maxHealth);
 
-            print(t);
+            print("Current health / max health:" + t);
 
             // Use Mathf.Lerp to calculate the knockback value
             float Knockback = Mathf.Lerp(startValue, endValue, t);
 
             // Print the knockback value
-            print(Knockback);
+            print("Knockback" + Knockback);
 
 
             rb.AddForce(PlayerDirection * Knockback);
