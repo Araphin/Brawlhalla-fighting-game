@@ -78,6 +78,8 @@ public class Enemy : MonoBehaviour
         {
             playerTransform = playerObject.transform;
         }
+
+            
     }
 
 
@@ -154,6 +156,7 @@ public class Enemy : MonoBehaviour
          
         if (Time.time >= nextAttackTime)
         {
+            //print("AttackReady");
             if (AttackMode)
             {
                 Attack();
@@ -189,6 +192,7 @@ public class Enemy : MonoBehaviour
 
     void EnemyLogic()
     {
+        print("EnemyLogic");
         distance = Vector2.Distance(transform.position, playerObject.transform.position);
 
         if (distance > attackDistance)
@@ -198,6 +202,7 @@ public class Enemy : MonoBehaviour
         }
         else if (attackDistance >= distance && cooling == false)
         {
+            print("WithinDistance");
             Attack();
         }
 
@@ -278,6 +283,8 @@ public class Enemy : MonoBehaviour
     void Attack()
     {
 
+        print("Attacking");
+        animator.SetTrigger("isAttacking");
         print("Enemy Attack");
             
             timer = intTimer;
@@ -308,7 +315,7 @@ public class Enemy : MonoBehaviour
         playerObject.GetComponent<PlayerController>().TakeDamage1(attackDamage, transform);
     }
 
-        void Cooldown()
+    void Cooldown()
         {
             timer -= Time.deltaTime;
 
@@ -319,32 +326,31 @@ public class Enemy : MonoBehaviour
             }
         }
 
-        void StopAttack()
-        {
-        print("Stop Attack");
-            cooling = false;
-            AttackMode = false;
-            anim.SetBool("Attack", false);
-            anim.SetBool("Running", true); 
-        }
+    void StopAttack()
+    {
+        cooling = false;
+        AttackMode = false;
+        anim.SetBool("Attack", false);
+        anim.SetBool("Running", true); 
+    }
 
-        void RaycastDebugger ()
-        {
-            if(distance > attackDistance)
-            {
-                Debug.DrawRay(rayCast.position, transform.right * rayCastLength, Color.red);
-            }
-            else if (attackDistance > distance)
-            {
-                Debug.DrawRay(rayCast.position, transform.right * rayCastLength, Color.green);
-            }
-        }
+   void RaycastDebugger ()
+   {
+       if(distance > attackDistance)
+       {
+           Debug.DrawRay(rayCast.position, transform.right * rayCastLength, Color.red);
+       }
+       else if (attackDistance > distance)
+       {
+           Debug.DrawRay(rayCast.position, transform.right * rayCastLength, Color.green);
+       }
+   }
     
 
-       public void TriggerCooling()
-       {
-           cooling = true;
-       }
+   public void TriggerCooling()
+   {
+       cooling = true;
+   }
       
 
     private void Start1()
