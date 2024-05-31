@@ -153,10 +153,10 @@ public class Enemy : MonoBehaviour
         {
             Move();
         }
-         
-        if (Time.time >= nextAttackTime)
+
+        if (Time.time >= nextAttackTime && inRange)
         {
-            //print("AttackReady");
+            Debug.Log("Ready to attack");
             if (AttackMode)
             {
                 Attack();
@@ -168,23 +168,23 @@ public class Enemy : MonoBehaviour
         {
             hit = Physics2D.Raycast(rayCast.position, transform.right, rayCastLength, raycastMask);
             RaycastDebugger();
+            
 
             if (hit.collider != null)
             {
+                print(hit.transform.name);
+                Debug.Log("Player in range");
                 EnemyLogic();
             }
-            else if (hit.collider == null)
+            else
             {
+                Debug.Log("Player out of range");
                 inRange = false;
-            }
-
-            if (inRange == false)
-            {
                 StopAttack();
-            }               
+            }
         }
 
-        if(!InsideofLimits() && !inRange && !anim.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
+        if (!InsideofLimits() && !inRange && !anim.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
         {
             SelectTarget();
         }
@@ -192,17 +192,14 @@ public class Enemy : MonoBehaviour
 
     void EnemyLogic()
     {
-        print("EnemyLogic");
         distance = Vector2.Distance(transform.position, playerObject.transform.position);
 
         if (distance > attackDistance)
         {
-           
             StopAttack();
         }
-        else if (attackDistance >= distance && cooling == false)
+        else if (attackDistance >= distance && !cooling)
         {
-            print("WithinDistance");
             Attack();
         }
 
@@ -282,59 +279,49 @@ public class Enemy : MonoBehaviour
 
     void Attack()
     {
+        Debug.Log("Attacking");
+        AttackMode = true;
+        anim.SetBool("Running", false);
+        anim.SetBool("Attack", true);
+        anim.SetTrigger("Attack");
 
-        print("Attacking");
-        animator.SetTrigger("isAttacking");
-        print("Enemy Attack");
-            
-            timer = intTimer;
-            AttackMode = true;
+        // Detect player in range of attack
+        Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, PlayerLayers);
 
-            anim.SetBool("Running", false);
-            anim.SetBool("Attack", true);
+        // Damage them
+        foreach (Collider2D player in hitPlayers)
+        {
+            PlayerController playerController = player.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.TakeDamage1(attackDamage, transform);
+            }
+        }
 
-            //Play an attack animations
-             anim.SetTrigger("Attack");
-
-        // Detect enemies in range of attack
-        //Collider2D[] hitPlayer = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, PlayerLayers);
-
-
-        //// damage them
-        //foreach (Collider2D player in hitPlayer)
-        //{
-        // //check for player controller script
-        //    PlayerController newPlayer = player.GetComponent<PlayerController>();
-        //    if (newPlayer.currentHealth > 0)
-        //    {
-        //        newPlayer.TakeDamage1(attackDamage);
-        //        print("attack");
-        //    }
-        //}
-
-        playerObject.GetComponent<PlayerController>().TakeDamage1(attackDamage, transform);
+        // Start cooling down
+        TriggerCooling();
     }
 
     void Cooldown()
-        {
-            timer -= Time.deltaTime;
+    {
+        timer -= Time.deltaTime;
 
-            if (timer <= 0 && cooling && AttackMode)
-            {
-                cooling = false;
-                timer = intTimer;
-            }
+        if (timer <= 0 && cooling && AttackMode)
+        {
+            cooling = false;
+            timer = intTimer;
         }
+    }
 
     void StopAttack()
     {
         cooling = false;
         AttackMode = false;
         anim.SetBool("Attack", false);
-        anim.SetBool("Running", true); 
+        anim.SetBool("Running", true);
     }
 
-   void RaycastDebugger ()
+    void RaycastDebugger ()
    {
        if(distance > attackDistance)
        {
