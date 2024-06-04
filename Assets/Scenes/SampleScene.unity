@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4305656}
   - component: {fileID: 4305657}
+  - component: {fileID: 4305658}
   m_Layer: 7
   m_Name: TriggerArea
   m_TagString: Untagged
@@ -145,7 +146,7 @@ Transform:
   m_GameObject: {fileID: 4305655}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.492, z: 0}
+  m_LocalPosition: {x: 0.92, y: 0.492, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -185,7 +186,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -2.2015986, y: 0.59783936}
+  m_Offset: {x: -1.201599, y: 0.59783936}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -195,8 +196,22 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 5.4031973, y: 2.1956782}
+  m_Size: {x: 1.5, y: 2}
   m_EdgeRadius: 0
+--- !u!114 &4305658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4305655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a89560c1f5d590b4cb9b86050d66080c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Triggered: 0
+  enemy: {fileID: 1099015149}
 --- !u!1 &42759759
 GameObject:
   m_ObjectHideFlags: 0
@@ -222,7 +237,7 @@ Transform:
   m_GameObject: {fileID: 42759759}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.23, y: -1.07, z: 0.8133951}
+  m_LocalPosition: {x: -13.75, y: -1.07, z: 0.8133951}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -939,13 +954,14 @@ MonoBehaviour:
   rayCast: {fileID: 595635306}
   raycastMask:
     serializedVersion: 2
-    m_Bits: 320
+    m_Bits: 64
   rayCastLength: 12
-  attackDistance: 1
+  attackDistance: 10
   moveSpeed: 3
-  timer: 3
+  timer: 1
   leftLimit: {fileID: 42759760}
   rightLimit: {fileID: 1588011612}
+  triggerArea: {fileID: 4305658}
   inRange: 0
   attackPoint: {fileID: 293975025}
   PlayerLayers:
@@ -953,7 +969,7 @@ MonoBehaviour:
     m_Bits: 64
   attackRange: 0.2
   attackDamage: 10
-  attackRate: 1
+  attackRate: 10
   playerObject: {fileID: 1444939462}
   EnemyDirection: {x: 0, y: 0}
   SwordController: {fileID: 9100000, guid: be958ff9014bfe24e82c10694ffe8497, type: 2}
@@ -1910,6 +1926,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7427725429290184984, guid: af133c398f3d9de4680cd234e3f01157, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7646622174288520532, guid: af133c398f3d9de4680cd234e3f01157, type: 3}
+      propertyPath: m_AngularDrag
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7646622174288520532, guid: af133c398f3d9de4680cd234e3f01157, type: 3}

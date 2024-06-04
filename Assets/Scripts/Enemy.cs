@@ -32,10 +32,11 @@ public class Enemy : MonoBehaviour
     public float rayCastLength;
     public float attackDistance;
     public float moveSpeed;
-    public float timer;
+    public float timer = 1;
     #endregion
     public Transform leftLimit;
     public Transform rightLimit;
+    public TriggerArea triggerArea;
 
     #region Private Variables
     public RaycastHit2D hit;
@@ -44,10 +45,8 @@ public class Enemy : MonoBehaviour
     private float distance;
     private bool AttackMode;
     public bool inRange;
-    private bool cooling;
     private float intTimer;
     #endregion
-
 
     [Header("Player Combat")]
     public Transform attackPoint;
@@ -55,11 +54,8 @@ public class Enemy : MonoBehaviour
     public float attackRange = 0.2f;
     public int attackDamage = 10;
     public float attackRate = 2f;
-    float nextAttackTime = 0f;
     public GameObject playerObject;
-    
 
-    
     public Vector2 EnemyDirection = Vector2.left;
 
     [Header("WeaponAnimators")]
@@ -78,15 +74,10 @@ public class Enemy : MonoBehaviour
         {
             playerTransform = playerObject.transform;
         }
-
-            
     }
 
-
-    //In video 2:55
     public void TakeDamage(int damage)
     {
-
         currentHealth -= damage;
         animator.SetTrigger("Hurt");
 
@@ -101,44 +92,29 @@ public class Enemy : MonoBehaviour
             // Player is to the left of the enemy, so set PlayerDirection to right
             PlayerDirection = Vector2.right;
         }
-        //else if (Die2())
-        //{
-           
-        //}
+
         // Define the start and end values
         float startValue = 300f;
-        float endValue = 75f;        
+        float endValue = 75f;
 
         // Calculate the 't' value
         float t = (currentHealth / maxHealth);
 
-        print(t);
-
         // Use Mathf.Lerp to calculate the knockback value
-        float Knockback = Mathf.Lerp(startValue, endValue, t);
+        float knockbackForce = Mathf.Lerp(startValue, endValue, t);
 
-        // Print the knockback value
-        print(Knockback);
-    
+        // Print the knockback value for debugging
+        Debug.Log("Knockback Force: " + knockbackForce);
 
-        rb.AddForce(PlayerDirection * Knockback);
-       
-       // if (currentHealth <= 0)
-      //  { 
-      //     Die();
-     //   }  
+        // Apply the knockback force
+        rb.AddForce(PlayerDirection * knockbackForce, ForceMode2D.Impulse);
+
+        // Check if the enemy should die
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
     }
-
-    //void Die()
-   // {
-   //     Debug.Log("Enemy died!");
-
-   //     animator.SetBool("IsDead", true);
-
-        //GetComponent<Collider2D>().enabled = false;
-   //     this.enabled = false;
-        
-    //}
 
     private void Awake()
     {
@@ -154,59 +130,9 @@ public class Enemy : MonoBehaviour
             Move();
         }
 
-        if (Time.time >= nextAttackTime && inRange)
-        {
-            Debug.Log("Ready to attack");
-            if (AttackMode)
-            {
-                Attack();
-                nextAttackTime = Time.time + 1f / attackRate;
-            }
-        }
-
-        if (inRange)
-        {
-            hit = Physics2D.Raycast(rayCast.position, transform.right, rayCastLength, raycastMask);
-            RaycastDebugger();
-            
-
-            if (hit.collider != null)
-            {
-                print(hit.transform.name);
-                Debug.Log("Player in range");
-                EnemyLogic();
-            }
-            else
-            {
-                Debug.Log("Player out of range");
-                inRange = false;
-                StopAttack();
-            }
-        }
-
         if (!InsideofLimits() && !inRange && !anim.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
         {
             SelectTarget();
-        }
-    }
-
-    void EnemyLogic()
-    {
-        distance = Vector2.Distance(transform.position, playerObject.transform.position);
-
-        if (distance > attackDistance)
-        {
-            StopAttack();
-        }
-        else if (attackDistance >= distance && !cooling)
-        {
-            Attack();
-        }
-
-        if (cooling)
-        {
-            Cooldown();
-            anim.SetBool("Attack", false);
         }
     }
 
@@ -227,31 +153,31 @@ public class Enemy : MonoBehaviour
         Flip();
     }
 
-        void OnTriggerEnter2D(Collider2D collision)   
+    void OnTriggerEnter2D(Collider2D collision)   
         {
-        if (collision.gameObject.tag == "pickup")
-        {
-            Weapons pickup = collision.gameObject.GetComponent<Weapons>();
-            string weapon = pickup.randomWeapon();
-
-            if (weapon == "sword")
+            if (collision.gameObject.tag == "pickup")
             {
-                anim.runtimeAnimatorController = SwordController as RuntimeAnimatorController;
-                attackDamage = 20;
-                attackRange = 0.5f;
-                attackRate = 2;
+                Weapons pickup = collision.gameObject.GetComponent<Weapons>();
+                string weapon = pickup.randomWeapon();
 
-            }
-            else if (weapon == "spear")
-            {
-                anim.runtimeAnimatorController = SpearController as RuntimeAnimatorController;
-                attackDamage = 15;
-                attackRange = 0.7f;
-                attackRate = 2.2f;
-            }
-        }
+                if (weapon == "sword")
+                {
+                    anim.runtimeAnimatorController = SwordController as RuntimeAnimatorController;
+                    attackDamage = 20;
+                    attackRange = 0.5f;
+                    attackRate = 2;
 
-        if (collision.gameObject.tag == "Player")
+                }
+                else if (weapon == "spear")
+                {
+                    anim.runtimeAnimatorController = SpearController as RuntimeAnimatorController;
+                    attackDamage = 15;
+                    attackRange = 0.7f;
+                    attackRate = 2.2f;
+                }
+            }
+
+            if (collision.gameObject.tag == "Player")
             {
                target = collision.transform;
                inRange = true;
@@ -265,25 +191,35 @@ public class Enemy : MonoBehaviour
             }
         } 
 
-        void Move()
+    void Move()
+    {
+        anim.SetBool("Running", true);
+        if(!anim.GetCurrentAnimatorStateInfo(0).IsName(""))
         {
-            anim.SetBool("Running", true);
-            if(!anim.GetCurrentAnimatorStateInfo(0).IsName(""))
-            {
-                Vector2 targetPosition = new Vector2(target.position.x, transform.position.y);
+            Vector2 targetPosition = new Vector2(target.position.x, transform.position.y);
 
-                transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+            transform.position = Vector2.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
 
-            }
         }
+    }
+
+    public void StartAttacking()
+    {
+        if(AttackMode == false)
+        {
+            AttackMode = true;
+            InvokeRepeating("Attack", 0f, 1f);
+        }
+        
+    }
 
     void Attack()
     {
-        Debug.Log("Attacking");
-        AttackMode = true;
+        print("Attacking");
+        
         anim.SetBool("Running", false);
         anim.SetBool("Attack", true);
-        anim.SetTrigger("Attack");
+        //anim.SetTrigger("Attack");
 
         // Detect player in range of attack
         Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, PlayerLayers);
@@ -295,50 +231,19 @@ public class Enemy : MonoBehaviour
             if (playerController != null)
             {
                 playerController.TakeDamage1(attackDamage, transform);
+                print("Enemy hits Player: " + attackDamage);
             }
         }
-
-        // Start cooling down
-        TriggerCooling();
+        AttackMode=false;
     }
 
-    void Cooldown()
+    public void StopAttack()
     {
-        timer -= Time.deltaTime;
-
-        if (timer <= 0 && cooling && AttackMode)
-        {
-            cooling = false;
-            timer = intTimer;
-        }
-    }
-
-    void StopAttack()
-    {
-        cooling = false;
+        CancelInvoke("Attack");
         AttackMode = false;
         anim.SetBool("Attack", false);
         anim.SetBool("Running", true);
     }
-
-    void RaycastDebugger ()
-   {
-       if(distance > attackDistance)
-       {
-           Debug.DrawRay(rayCast.position, transform.right * rayCastLength, Color.red);
-       }
-       else if (attackDistance > distance)
-       {
-           Debug.DrawRay(rayCast.position, transform.right * rayCastLength, Color.green);
-       }
-   }
-    
-
-   public void TriggerCooling()
-   {
-       cooling = true;
-   }
-      
 
     private void Start1()
     {

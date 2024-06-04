@@ -276,7 +276,7 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage1(int damage, Transform enemyTransform)
         {
 
-            print("Take damage " + damage);
+           // print("Take damage " + damage);
             currentHealth -= damage;
             anim.SetTrigger("Hurt");
 
@@ -302,13 +302,13 @@ public class PlayerController : MonoBehaviour
             // Calculate the 't' value
             float t = (currentHealth / maxHealth);
 
-            print("Current health / max health:" + t);
+           // print("Current health / max health:" + t);
 
             // Use Mathf.Lerp to calculate the knockback value
             float Knockback = Mathf.Lerp(startValue, endValue, t);
 
             // Print the knockback value
-            print("Knockback" + Knockback);
+          //  print("Knockback" + Knockback);
 
 
             rb.AddForce(PlayerDirection * Knockback);
