@@ -6,6 +6,7 @@ TagManager:
   tags:
   - pickup
   - Deathzone
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -42,4 +43,10 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Weapons
+    uniqueID: 2447257075
+    locked: 0
+  - name: New Layer 2
+    uniqueID: 610125641
     locked: 0

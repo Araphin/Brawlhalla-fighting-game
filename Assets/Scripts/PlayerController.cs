@@ -58,6 +58,8 @@ public class PlayerController : MonoBehaviour
     public Vector2 EnemyDirection = Vector2.left;
     Transform enemyTransform;
 
+    public float testDamage = 20;
+
 
     // Start is called before the first frame update
     void Start()
@@ -85,6 +87,11 @@ public class PlayerController : MonoBehaviour
                 Attack();
                 nextAttackTime = Time.time + 1f / attackRate;
             }
+        }
+
+        if(UnityEngine.Input.GetKeyDown(KeyCode.T))
+        {
+            TakeDamageTest(testDamage);
         }
 
     }
@@ -215,11 +222,16 @@ public class PlayerController : MonoBehaviour
         // damage them
         foreach (Collider2D enemy in hitEnemies)
         {
-            Enemy newEnemy = enemy.GetComponent<Enemy>();
-            if (newEnemy.currentHealth > 0)
+            if(enemy.gameObject.tag == "Enemy")
             {
-                newEnemy.TakeDamage(attackDamage);
+                print("PlayerHitEnemy");
+                Enemy newEnemy = enemy.GetComponent<Enemy>();
+                if (newEnemy.currentHealth > 0)
+                {
+                    newEnemy.TakeDamage(attackDamage);
+                }
             }
+            
         }
     }
 
@@ -272,6 +284,29 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+
+    void TakeDamageTest(float damage)
+    {
+      //  print("Take damage " + damage);
+        currentHealth -= damage;
+        anim.SetTrigger("Hurt");
+      
+        float startValue = 9000f;
+        float endValue = 0f;
+
+        float t = (currentHealth / maxHealth);
+
+      //  print("Current health / max health:" + t);
+
+        // Use Mathf.Lerp to calculate the knockback value
+        float Knockback = Mathf.Lerp(startValue, endValue, t);
+
+        // Print the knockback value
+        //print("Knockback" + Knockback);
+
+        rb.AddForce(Vector2.right * Knockback);
+    }
+
     //This function reduces the player's health when they take damage, plays a hurt animation, and applies a knockback force.
     public void TakeDamage1(int damage, Transform enemyTransform)
         {
@@ -284,23 +319,20 @@ public class PlayerController : MonoBehaviour
             if (enemyTransform.position.x > transform.position.x)
             {
                 // Player is to the right of the enemy, so set PlayerDirection to left
-                PlayerDirection = Vector2.left;
+                EnemyDirection = Vector2.left;
             }
             else
             {
                 // Player is to the left of the enemy, so set PlayerDirection to right
                 EnemyDirection = Vector2.right;
             }
-            //else if (Die2())
-            //{
 
-            //}
             // Define the start and end values
-            float startValue = 300f;
-            float endValue = 75f;
+            float startValue = 9000f;
+            float endValue = 0f;
 
-            // Calculate the 't' value
-            float t = (currentHealth / maxHealth);
+        // Calculate the 't' value
+        float t = (currentHealth / maxHealth);
 
            // print("Current health / max health:" + t);
 
@@ -311,7 +343,7 @@ public class PlayerController : MonoBehaviour
           //  print("Knockback" + Knockback);
 
 
-            rb.AddForce(PlayerDirection * Knockback);
+            rb.AddForce(EnemyDirection * Knockback);
 
             // if (currentHealth <= 0)
             //  { 

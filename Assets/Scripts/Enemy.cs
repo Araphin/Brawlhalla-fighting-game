@@ -64,6 +64,8 @@ public class Enemy : MonoBehaviour
     public RuntimeAnimatorController AxeController;
     public RuntimeAnimatorController HammerController;
 
+    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -79,7 +81,7 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        animator.SetTrigger("Hurt");
+        anim.SetTrigger("Hurt");
 
         // Determine which direction the player is facing
         if (playerTransform.position.x > transform.position.x)
@@ -94,26 +96,63 @@ public class Enemy : MonoBehaviour
         }
 
         // Define the start and end values
-        float startValue = 300f;
-        float endValue = 75f;
+        float startValue = 900f;
+        float endValue = 0f;
 
         // Calculate the 't' value
         float t = (currentHealth / maxHealth);
 
+        // print("Current health / max health:" + t);
+
         // Use Mathf.Lerp to calculate the knockback value
-        float knockbackForce = Mathf.Lerp(startValue, endValue, t);
+        float Knockback = Mathf.Lerp(startValue, endValue, t);
 
-        // Print the knockback value for debugging
-        Debug.Log("Knockback Force: " + knockbackForce);
+        // Print the knockback value
+        //  print("Knockback" + Knockback);
 
-        // Apply the knockback force
-        rb.AddForce(PlayerDirection * knockbackForce, ForceMode2D.Impulse);
 
-        // Check if the enemy should die
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        rb.AddForce(PlayerDirection * Knockback);
+
+        // if (currentHealth <= 0)
+        //  { 
+        //     Die();
+        //   }  
+        //currentHealth -= damage;
+        //animator.SetTrigger("Hurt");
+
+        //// Determine which direction the player is facing
+        //if (playerTransform.position.x > transform.position.x)
+        //{
+        //    // Player is to the right of the enemy, so set PlayerDirection to left
+        //    PlayerDirection = Vector2.left;
+        //}
+        //else
+        //{
+        //    // Player is to the left of the enemy, so set PlayerDirection to right
+        //    PlayerDirection = Vector2.right;
+        //}
+
+        //// Define the start and end values
+        //float startValue = 9000f;
+        //float endValue = 0f;
+
+        //// Calculate the 't' value
+        //float t = (currentHealth / maxHealth);
+
+        //// Use Mathf.Lerp to calculate the knockback value
+        //float knockbackForce = Mathf.Lerp(startValue, endValue, t);
+
+        //// Print the knockback value for debugging
+        //Debug.Log("Knockback Force: " + knockbackForce);
+
+        //// Apply the knockback force
+        //rb.AddForce(PlayerDirection * knockbackForce);
+
+        //// Check if the enemy should die
+        //if (currentHealth <= 0)
+        //{
+        //    Die();
+        //}
     }
 
     private void Awake()
@@ -215,7 +254,8 @@ public class Enemy : MonoBehaviour
 
     void Attack()
     {
-        print("Attacking");
+        //print("Attacking");
+        //print("Attacking");
         
         anim.SetBool("Running", false);
         anim.SetBool("Attack", true);
@@ -231,7 +271,7 @@ public class Enemy : MonoBehaviour
             if (playerController != null)
             {
                 playerController.TakeDamage1(attackDamage, transform);
-                print("Enemy hits Player: " + attackDamage);
+              //  print("Enemy hits Player: " + attackDamage);
             }
         }
         AttackMode=false;
@@ -273,18 +313,21 @@ public class Enemy : MonoBehaviour
         {
             Lives = Lives - 1;
             Respawn();
+            rb.velocity = Vector3.zero;
             currentHealth = 100;
             Knockback = 0;
         }
         else if (Lives == 0)
         {
             Die2();
+          
         }
     }
 
     void Respawn()
     {
         transform.position = startPos;
+
     }
 
     private bool InsideofLimits()
